@@ -11,7 +11,7 @@
             Rp <?= number_format($food['price'], 0, ',', '.') ?>
         </p>
         <p class="location">
-            📍 <?= htmlspecialchars($food['location']) ?>
+            𖡡 <?= htmlspecialchars($food['location']) ?>
         </p>
     </div>
 
