@@ -31,6 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
     <div class="container pt-5 page-wrap">
         <h2 class="page-title">EDIT FOOD INFORMATION</h2>
+        <br>
         <div class="form-card">
             <form method="POST" class="retro-form">
                 <label>Food Name:</label>

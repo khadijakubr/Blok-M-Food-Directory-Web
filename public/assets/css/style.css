@@ -2,8 +2,8 @@
 /* Page-title font*/
 @font-face {
   font-family: "RetroTitle";
-  src: url("../fonts/bernoru-blackultraexpanded.otf") format("opentype");
-  font-weight: 300;
+  src: url("../fonts/GulfsDisplay-Normal.ttf") format("truetype");
+  font-weight: 900;
   font-display: swap;
 }
 
@@ -83,6 +83,7 @@ body {
 .page-title,
 h1 {
   font-family: var(--font-page-title);
+  font-size: 2rem;
   color: var(--title-color);
   text-shadow: 2px 2px 0 #000000;
   letter-spacing: 0.5px;
