@@ -1,10 +1,10 @@
 <?php
-require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 
 use Kreait\Firebase\Factory;
 
 // Ambil credentials dari environment variable
-$firebaseCredentials = __DIR__ . '/firebase_credentials.json';
+$firebaseCredentials = __DIR__ . '/../firebase_credentials.json';
 
 // if (!$firebaseCredentials) {
 //     die("Firebase credentials not set in environment variables.");

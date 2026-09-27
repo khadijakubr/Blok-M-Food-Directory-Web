@@ -1,6 +1,6 @@
-<div class="card">
+<div class="card retro-card food-card">
     <div class="card-header">
-        <h3><?= htmlspecialchars($food['foodName']) ?></h3>
+        <h3 class="card-title"><?= htmlspecialchars($food['foodName']) ?></h3>
         <span class="rating">
             ⭐ <?= htmlspecialchars($food['rating']) ?> / 10
         </span>
@@ -16,6 +16,6 @@
     </div>
 
     <div class="card-footer">
-        <a href="view.php?id=<?= $id ?>">Details</a>
+        <a href="view.php?id=<?= $id ?>" class="btn-retro">Details</a>
     </div>
 </div>
