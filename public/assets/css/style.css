@@ -27,6 +27,7 @@
   --bg-main: #3EA66B;
   --title-color: #FF6953;
   --card-bg: #FFFBE0;
+  --navbar-bg: #9C8BEF;
   --ink: #000000;
   --btn-bg: #FFD83F;
   --btn-text: #F9B2DC;
@@ -64,7 +65,13 @@ body {
 }
 
 .page-wrap.view-page {
-  justify-content: center;
+  margin-top: 2.5rem;
+  margin-bottom: 0;
+}
+
+.page-wrap.settings-page {
+  margin-top: 5rem;
+  margin-bottom: 0;
 }
 
 /* Page header row: title on the left, action button on the right (stacks on mobile) */
@@ -225,6 +232,11 @@ div.card {
   transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.15s ease;
 }
 
+.btn-retro .g-badge {
+  text-shadow: none;
+  color: var(--ink);
+}
+
 .btn-retro:hover,
 .btn-primary:hover,
 .btn-secondary:hover {
@@ -367,7 +379,176 @@ textarea { resize: vertical; }
   font-weight: 700;
 }
 
-/* ---------- 7. RESPONSIVE ---------- */
+/* ---------- 7. AUTH SWITCH FOOTER (login <-> register link) ---------- */
+/* Retro card bar under the form */
+.page-footer.auth-page {
+  background-color: var(--card-bg);
+  border: var(--border-thick);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  width: 100%;
+  max-width: 640px;
+  margin: 1.25rem auto 0;
+  padding: 0.8rem 1.25rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.page-footer.auth-page .auth-text {
+  color: var(--ink);
+  margin-right: 0.35rem;
+}
+
+/* Clickable part: yellow retro pill */
+.page-footer.auth-page .auth-link {
+  display: inline-block;
+  background-color: var(--btn-bg);
+  color: var(--ink);
+  border: var(--border-thin);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-btn);
+  padding: 0.15rem 0.7rem;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.15s ease;
+}
+
+.page-footer.auth-page .auth-link:hover {
+  filter: brightness(1.05);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px #000000;
+}
+
+.page-footer.auth-page .auth-link:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px #000000;
+}
+
+/* Stacked rows */
+.page-footer.auth-page .auth-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  line-height: 2;
+  padding: 0.25rem 0;
+}
+
+/* divider with side rules, same retro ink */
+.page-footer.auth-page .auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.5rem 0;
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.page-footer.auth-page .auth-divider::before,
+.page-footer.auth-page .auth-divider::after {
+  content: "";
+  flex: 1 1 0;
+  border-top: var(--border-thin);
+}
+
+/* Google button + G badge slot */
+.page-footer.auth-page .auth-link--google {
+  padding: 0.35rem 1rem;
+  text-decoration: none;
+}
+
+/* shared G badge */
+.g-badge,
+.page-footer.auth-page .auth-link--google .g-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4em;
+  height: 1.4em;
+  margin-right: 0.45rem;
+  background-color: var(--card-bg);
+  border: var(--border-thin);
+  border-radius: 50%;
+  font-weight: 900;
+  vertical-align: -0.25em;
+}
+
+/* keep old selector working */
+.page-footer.auth-page .auth-link--google .g-badge {
+  margin-right: 0.45rem;
+}
+
+/* ---------- 8. NAVBAR (logo left, settings right) ---------- */
+/* CHANGED: new navbar block */
+.retro-navbar {
+  background-color: var(--navbar-bg);
+  border-radius: 0;
+  border-bottom: var(--border-thick);
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: nowrap; 
+}
+
+/* CHANGED: logo left, same asset as index.php (was: none) — reason: consistent branding, flex-start. */
+.retro-navbar .navbar-logo img {
+  display: block;
+  width: min(100%, 150px);
+  height: auto;
+}
+
+/* CHANGED: settings pill right */
+.retro-navbar .navbar-settings {
+  display: inline-block;
+  background-color: var(--btn-bg);
+  color: var(--ink);
+  border: var(--border-thin);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-btn);
+  padding: 0.35rem 0.9rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.15s ease;
+}
+
+.retro-navbar .navbar-settings:hover {
+  filter: brightness(1.05);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px #000000;
+}
+
+/* ---------- 9. SETTINGS PAGE ---------- */
+/* user info rows */
+.settings-list {
+  text-align: left;
+  margin: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.settings-list .settings-row {
+  background-color: var(--btn-bg);
+  border: var(--border-thin);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-btn);
+  padding: 0.6rem 0.8rem;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- 10. RESPONSIVE ---------- */
 @media (max-width: 768px) {
   .page-head {
     flex-direction: column;

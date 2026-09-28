@@ -4,7 +4,7 @@ require __DIR__ . '/firebase_config.php';
 // Set timezone agar konsisten
 date_default_timezone_set('Asia/Jakarta');
 
-$successMessage = '';
+$message = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $foodName = $_POST['food-name'];
@@ -13,16 +13,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $rating = $_POST['rating'];
     $notes = $_POST['notes'];
 
-    $newPostRef = $database->getReference('foods')->push([
-        'foodName' => $foodName,
-        'location' => $location,
-        'price' => $price,
-        'rating' => $rating,
-        'notes' => $notes,
-        'created_at' => date('Y-m-d H:i:s'),
-    ]);
+    try {
+        $newPostRef = $database->getReference('foods')->push([
+            'foodName' => $foodName,
+            'location' => $location,
+            'price' => $price,
+            'rating' => $rating,
+            'notes' => $notes,
+            'created_at' => date('Y-m-d H:i:s'),
+        ]);
 
-    $successMessage = "You've added a new food in your directory!";
+        $newFoodId = $newPostRef->getKey();
+
+        header('Location: view.php?id=' . urlencode($newFoodId));
+        exit;
+    } catch (Exception $e) {
+        $message = 'Error adding food: ' . $e->getMessage();
+    }
 }
 ?>
 
@@ -37,6 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
+    <div>
+        <?php include 'navbar.php'; ?>
+    </div>
     <div class="container pt-5 page-wrap">
         <h2 class="page-title">ADD NEW FOOD</h2>
         <hr>
@@ -50,9 +60,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <button type="submit" class="btn btn-primary btn-retro btn-single">Add</button>
             </form>
         </div>
-        <?php if ($successMessage): ?>
-            <div class="alert alert-success mt-3">
-                <?= htmlspecialchars($successMessage) ?>
+        <?php if ($message): ?>
+            <div class="alert alert-danger mt-3">
+                <?= htmlspecialchars($message) ?>
             </div>
         <?php endif; ?>
         <br>

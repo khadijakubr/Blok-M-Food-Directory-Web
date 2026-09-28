@@ -17,6 +17,9 @@ $food = $database->getReference("foods/$id")->getValue();
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
+    <div>
+        <?php include 'navbar.php'; ?>
+    </div>
     <div class="container pt-5 page-wrap view-page">
         <?php if ($food): ?>
             <div class="food-item retro-card">

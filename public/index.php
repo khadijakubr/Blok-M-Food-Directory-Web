@@ -1,4 +1,12 @@
 <?php
+#session use so that the user needs to login first before accessing the index page
+session_start();
+
+if (empty($_SESSION['firebase_uid'])) {
+    header('Location: login.php');
+    exit;
+}
+
 require __DIR__ . '/firebase_config.php';
 
 // Ambil semua data foods
@@ -32,7 +40,10 @@ if ($foods) {
                     alt="Blok M Food Directory"
                     class="page-title-image"
                 >
-                <a href="create.php" class="btn btn-primary btn-retro">+ New Food</a>
+                <div>
+                    <a href="create.php" class="btn btn-primary btn-retro">+ New Food</a>
+                    <a href="settings.php" class="btn btn-secondary btn-retro">⚙</a>
+                </div>
             </div>
         </div>
 

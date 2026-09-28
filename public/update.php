@@ -29,6 +29,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
+    <div>
+        <?php include 'navbar.php'; ?>
+    </div>
     <div class="container pt-5 page-wrap">
         <h2 class="page-title">EDIT FOOD INFORMATION</h2>
         <br>
