@@ -11,7 +11,9 @@ require __DIR__ . '/../vendor/autoload.php';
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\Auth;
 
-$factory = (new Factory)->withServiceAccount(__DIR__ . '/../firebase_credentials.json');
+$firebaseCredentials = getenv('FIREBASE_CREDENTIALS_JSON'); 
+$serviceAccount = $firebaseCredentials ? json_decode($firebaseCredentials, true) : __DIR__ . '/../firebase_credentials.json';
+$factory = (new Factory)->withServiceAccount($serviceAccount); 
 $auth = $factory->createAuth();
 
 $message = '';

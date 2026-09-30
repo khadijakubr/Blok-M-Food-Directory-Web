@@ -3,3 +3,5 @@ firebase_web_config_local.php
 vendor/
 .DS_Store
 .env
+.git
+.gitignore

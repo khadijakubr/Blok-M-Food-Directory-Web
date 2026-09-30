@@ -6,13 +6,13 @@ if (!empty($_SESSION['firebase_uid'])) {
     exit;
 }
 
-require __DIR__ . '/../vendor/autoload.php'; 
-require __DIR__ . '/../firebase_web_config.php';
+require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../firebase_web_config.php'; 
 
-use Kreait\Firebase\Factory; 
-
-$factory = (new Factory)->withServiceAccount(__DIR__ . '/../firebase_credentials.json'); 
-$auth = $factory->createAuth();
+$firebaseCredentials = getenv('FIREBASE_CREDENTIALS_JSON'); 
+$serviceAccount = $firebaseCredentials ? json_decode($firebaseCredentials, true) : __DIR__ . '/../firebase_credentials.json';
+$factory = (new Factory)->withServiceAccount($serviceAccount); 
+$googleConfigured = !empty($firebaseWebConfig['apiKey']) && !empty($firebaseWebConfig['projectId']);
 
 $message = ''; 
 
@@ -74,6 +74,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['idToken'])) {
         import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
         const firebaseConfig = <?php echo json_encode($firebaseWebConfig, JSON_UNESCAPED_SLASHES); ?>;
+        const googleConfigured = <?php echo $googleConfigured ? 'true' : 'false'; ?>; 
+        if (!googleConfigured) { 
+            document.getElementById('googleStatus').style.display = 'block'; 
+            document.getElementById('googleStatus').textContent = 'Google sign-in is not configured (FIREBASE_WEB_CONFIG_JSON missing).'; 
+            document.getElementById('googleBtn').disabled = true; 
+            throw new Error('Missing FIREBASE_WEB_CONFIG_JSON'); 
+        }
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
