@@ -9,6 +9,8 @@ if (!empty($_SESSION['firebase_uid'])) {
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/../firebase_web_config.php'; 
 
+use Kreait\Firebase\Factory;
+
 $firebaseCredentials = getenv('FIREBASE_CREDENTIALS_JSON'); 
 $serviceAccount = $firebaseCredentials ? json_decode($firebaseCredentials, true) : __DIR__ . '/../firebase_credentials.json';
 $factory = (new Factory)->withServiceAccount($serviceAccount); 
