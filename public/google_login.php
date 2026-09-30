@@ -14,6 +14,7 @@ use Kreait\Firebase\Factory;
 $firebaseCredentials = getenv('FIREBASE_CREDENTIALS_JSON'); 
 $serviceAccount = $firebaseCredentials ? json_decode($firebaseCredentials, true) : __DIR__ . '/../firebase_credentials.json';
 $factory = (new Factory)->withServiceAccount($serviceAccount); 
+$auth = $factory->createAuth();
 $googleConfigured = !empty($firebaseWebConfig['apiKey']) && !empty($firebaseWebConfig['projectId']);
 
 $message = ''; 
