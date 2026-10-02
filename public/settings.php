@@ -1,13 +1,33 @@
 <?php
-session_start(); 
-if (empty($_SESSION['firebase_uid'])) { 
-    header('Location: login.php'); 
+session_start(); // Start session to manage user state
+if (empty($_SESSION['firebase_uid'])) { // Check if user is logged in
+    header('Location: login.php'); // Redirect to login if not logged in
     exit; 
 }
 
+require __DIR__ . '/firebase_config.php'; // Load Firebase Auth for the authoritative verification status.
+
+// Check verification by session UID, matching the index page and avoiding email-hash lookups.
+try {
+    $firebaseUser = $auth->getUser($_SESSION['firebase_uid']);
+} catch (Throwable $e) {
+    $firebaseUser = null;
+}
+
+if (!$firebaseUser || !$firebaseUser->emailVerified) {
+    $_SESSION = [];
+    if (ini_get('session.use_cookies')) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], $params['httponly']);
+    }
+    session_destroy();
+    header('Location: login.php?error=unverified');
+    exit;
+}
+
 // only for display
-$email = $_SESSION['firebase_email'] ?? '-'; 
-$uid = $_SESSION['firebase_uid'] ?? '-'; 
+$email = $_SESSION['firebase_email'] ?? '-'; // Get email from session for display
+$uid = $_SESSION['firebase_uid'] ?? '-'; // Get UID from session for display
 ?>
 
 <!DOCTYPE html>

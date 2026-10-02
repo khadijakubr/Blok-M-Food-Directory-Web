@@ -7,12 +7,19 @@ use Kreait\Firebase\Factory;
 $firebaseCredentials = getenv('FIREBASE_CREDENTIALS_JSON');
 $databaseUrl = getenv('FIREBASE_DATABASE_URL') ?: 'https://new-cc-project-e26d2-default-rtdb.asia-southeast1.firebasedatabase.app/'; 
 
-if (!$firebaseCredentials) {
-     die("Firebase credentials not set in environment variables.");
-}
+if ($firebaseCredentials) {
+    $serviceAccount = json_decode($firebaseCredentials, true);
 
-// Decode JSON credentials
-$serviceAccount = $firebaseCredentials ? json_decode($firebaseCredentials, true) : __DIR__ . '/../firebase_credentials.json';
+    if(!is_array($serviceAccount)) {
+        die("Invalid Firebase credentials JSON in environment variable.");
+    } 
+} else {
+    $serviceAccount = __DIR__ . '/../firebase_credentials.json';
+
+    if (!is_file($serviceAccount)) {
+        die('Firebase credentials file was not found.');
+    }
+}
 
 // Firebase Configuration (service account from env/file)
 $factory = (new Factory)
@@ -20,4 +27,5 @@ $factory = (new Factory)
     ->withDatabaseUri($databaseUrl);
 
 $database = $factory->createDatabase();
+$auth = $factory->createAuth();
 ?>

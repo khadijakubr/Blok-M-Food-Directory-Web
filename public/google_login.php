@@ -1,37 +1,66 @@
 <?php
-session_start();
+session_start(); 
 
-if (!empty($_SESSION['firebase_uid'])) {
+if (!empty($_SESSION['firebase_uid'])) { 
     header('Location: index.php');
     exit;
 }
 
-require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php'; 
 require __DIR__ . '/../firebase_web_config.php'; 
+require __DIR__ . '/firebase_config.php';
 
-use Kreait\Firebase\Factory;
-
-$firebaseCredentials = getenv('FIREBASE_CREDENTIALS_JSON'); 
-$serviceAccount = $firebaseCredentials ? json_decode($firebaseCredentials, true) : __DIR__ . '/../firebase_credentials.json';
-$factory = (new Factory)->withServiceAccount($serviceAccount); 
-$auth = $factory->createAuth();
-$googleConfigured = !empty($firebaseWebConfig['apiKey']) && !empty($firebaseWebConfig['projectId']);
+$googleConfigured = !empty($firebaseWebConfig['apiKey']) && !empty($firebaseWebConfig['projectId']); // Check if Google auth is configured
 
 $message = ''; 
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['idToken'])) { 
-    try {  
-        $verifiedToken = $auth->verifyIdToken($_POST['idToken']); 
-        $uid = $verifiedToken->claims()->get('sub'); 
-        $email = $verifiedToken->claims()->get('email'); 
-        
-        session_regenerate_id(true); 
-        $_SESSION['firebase_uid'] = $uid; 
-        $_SESSION['firebase_email'] = $email ?? ''; 
-        header('Location: index.php'); 
-        exit; 
-    } catch (Exception $e) { 
-        $message = 'Google sign-in failed: ' . $e->getMessage(); 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    header('Content-Type: application/json');
+
+    if (empty($_POST['idToken'])) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Google ID token was not provided.']);
+        exit;
+    }
+
+    try {
+        $verifiedToken = $auth->verifyIdToken($_POST['idToken']); // Verify the browser token on the server.
+        $uid = $verifiedToken->claims()->get('sub');
+        $firebaseUser = $auth->getUser($uid);
+
+        // Use Firebase Auth's verified status; 
+        if (!$firebaseUser->emailVerified) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'This Google account email is not verified.']);
+            exit;
+        }
+
+        $email = $firebaseUser->email ?? '';
+        $userRef = $database->getReference('users/' . $uid);
+        $userData = $userRef->getValue();
+
+        // Mirror the verified status under UID after confirming it against Firebase Auth above.
+        if (!$userData) {
+            $userRef->set([
+                'email' => $email,
+                'uid' => $uid,
+                'verified' => true,
+                'created_at' => date('c'),
+                'provider' => 'google',
+            ]);
+        } else {
+            $userRef->update(['email' => $email, 'uid' => $uid, 'verified' => true]);
+        }
+
+        session_regenerate_id(true);
+        $_SESSION['firebase_uid'] = $uid;
+        $_SESSION['firebase_email'] = $email;
+        echo json_encode(['success' => true]);
+        exit;
+    } catch (Throwable $e) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'Google sign-in could not be verified. Please try again.']);
+        exit;
     }
 }
 ?>
@@ -102,14 +131,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['idToken'])) {
                 const form = new FormData(); 
                 form.append('idToken', idToken);
 
-                const res = await fetch('google_login.php', { method: 'POST', body: form }); 
-                if (res.redirected) { 
-                    window.location.href = res.url;
-                } else if (res.ok) {
-                    window.location.href = 'index.php'; 
-                } else {
-                    throw new Error('Verification failed.'); 
+                const res = await fetch('google_login.php', { method: 'POST', body: form });
+                const data = await res.json();
+                if (!res.ok || !data.success) {
+                    throw new Error(data.message || 'Verification failed.');
                 }
+                window.location.href = 'index.php';
             } catch (err) {
                 status.textContent = 'Google sign-in failed: ' + (err?.message || err); 
                 btn.disabled = false; 

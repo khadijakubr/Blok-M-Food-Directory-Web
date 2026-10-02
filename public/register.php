@@ -1,40 +1,47 @@
 <?php
-session_start();
+session_start(); // Start session to manage user state
 
-if (!empty($_SESSION['firebase_uid'])) {
+if (!empty($_SESSION['firebase_uid'])) { 
     header('Location: index.php');
     exit;
 }
 
 require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/firebase_config.php';
 
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\Auth;
+use Kreait\Firebase\Database; 
 
-$firebaseCredentials = getenv('FIREBASE_CREDENTIALS_JSON'); 
-$serviceAccount = $firebaseCredentials ? json_decode($firebaseCredentials, true) : __DIR__ . '/../firebase_credentials.json';
-$factory = (new Factory)->withServiceAccount($serviceAccount); 
-$auth = $factory->createAuth();
+$message = ''; 
 
-$message = '';
-
-//Get user input from form submission
+// Get user input from form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $email = $_POST['email'];
-    $password = $_POST['password'];
+    $email = $_POST['email']; 
+    $password = $_POST['password']; 
 
     try {
         $user = $auth->createUserWithEmailAndPassword($email, $password);
-        $message = "You have registered successfully!";
+        // Firebase Auth owns verification; its action handler returns to this app with the UID.
+        $appUrl = rtrim(getenv('APP_URL') ?: 'http://localhost:8000', '/');
+        $actionCodeSettings = [
+            'url' => $appUrl . '/verify.php?uid=' . rawurlencode($user->uid),
+        ];
+        $auth->sendEmailVerificationLink($email, $actionCodeSettings);
+        
+        // Keep profile records keyed by UID; do not duplicate verified state in Realtime Database.
+        $database->getReference('users/' . $user->uid)->set([
+            'email' => $email, 
+            'uid' => $user->uid, 
+            // Mirror Firebase Auth's initial state for easier display/debugging; Auth remains authoritative.
+            'verified' => false,
+            'created_at' => date('c') 
+        ]);
+        
+        $message = "Registration successful! Please check your email to verify your account.";
 
-        session_regenerate_id(true);
-        $_SESSION['firebase_uid'] = $user->uid;
-        $_SESSION['firebase_email'] = $email;
-
-        header('Location: index.php');
-        exit;
     } catch (Exception $e) {
-        $message = "Error: " . $e->getMessage();
+        $message = "Error: " . $e->getMessage(); 
     }
 }
 

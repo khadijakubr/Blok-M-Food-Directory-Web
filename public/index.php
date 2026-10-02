@@ -2,17 +2,35 @@
 #session use so that the user needs to login first before accessing the index page
 session_start();
 
-if (empty($_SESSION['firebase_uid'])) {
-    header('Location: login.php');
+if (empty($_SESSION['firebase_uid'])) { // Check if user is logged in
+    header('Location: login.php'); 
     exit;
 }
 
-require __DIR__ . '/firebase_config.php';
+require __DIR__ . '/firebase_config.php'; // Load Firebase configuration
+
+// Re-check Firebase Auth by UID so a stale PHP session cannot bypass verification.
+try {
+    $firebaseUser = $auth->getUser($_SESSION['firebase_uid']);
+} catch (Throwable $e) {
+    $firebaseUser = null;
+}
+
+if (!$firebaseUser || !$firebaseUser->emailVerified) {
+    $_SESSION = [];
+    if (ini_get('session.use_cookies')) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], $params['httponly']);
+    }
+    session_destroy();
+    header('Location: login.php?error=unverified');
+    exit;
+}
 
 // Ambil semua data foods
-$foods = $database->getReference('foods')->getValue();
+$foods = $database->getReference('foods')->getValue(); // Fetch all food data from database
 if ($foods) {
-    uasort($foods, function ($foodA, $foodB) {
+    uasort($foods, function ($foodA, $foodB) { // Sort foods by creation date (newest first)
         return strcmp(
             $foodB['created_at'] ?? '',
             $foodA['created_at'] ?? ''

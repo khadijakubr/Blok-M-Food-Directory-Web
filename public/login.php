@@ -1,39 +1,52 @@
 <?php
-session_start();
+session_start(); // Start session to manage user state
 
-if (!empty($_SESSION['firebase_uid'])) {
+if (!empty($_SESSION['firebase_uid'])) { // If user already logged in, redirect to home
     header('Location: index.php');
     exit;
 }
 
-require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php'; 
+require __DIR__ . '/firebase_config.php';
 
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\Auth;
+use Kreait\Firebase\Database;
 
-$firebaseCredentials = getenv('FIREBASE_CREDENTIALS_JSON'); 
-$serviceAccount = $firebaseCredentials ? json_decode($firebaseCredentials, true) : __DIR__ . '/../firebase_credentials.json';
-$factory = (new Factory)->withServiceAccount($serviceAccount); 
-$auth = $factory->createAuth();
+$message = ''; 
 
-$message = '';
+// CHANGED: Check for verified=1 parameter from verification redirect
+if (isset($_GET['verified']) && $_GET['verified'] == '1') {
+    $message = "Your account is verified! You can now log in."; // Success message for verified users
+}
 
-//Get user input from form submission
+// CHANGED: Check for error=unverified parameter from index.php redirect
+if (isset($_GET['error']) && $_GET['error'] == 'unverified') {
+    $message = "Your account is not verified. Please check your email and click the verification link."; // Error for unverified access attempt
+}
+
+// Get user input from form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $email = $_POST['email'];
-    $password = $_POST['password'];
+    $email = $_POST['email']; 
+    $password = $_POST['password']; 
 
     try {
-        $signInResult = $auth->signInWithEmailAndPassword($email,$password);
-        $message = "Login successful!";
+        $signInResult = $auth->signInWithEmailAndPassword($email, $password); 
+        $uid = $signInResult->firebaseUserId(); // Get Firebase UID
+        // Read verification from Firebase Auth instead of a possibly stale database copy.
+        $firebaseUser = $auth->getUser($uid);
 
-        session_regenerate_id(true);
-        $_SESSION['firebase_uid'] = $signInResult->firebaseUserId();
-        $_SESSION['firebase_email'] = $email;
-        header('Location: index.php');
-        exit;
-    }catch (Exception $e){
-        $message = "Login failed: " . $e->getMessage();
+        if ($firebaseUser->emailVerified) { 
+            session_regenerate_id(true); 
+            $_SESSION['firebase_uid'] = $uid; 
+            $_SESSION['firebase_email'] = $firebaseUser->email ?? $email; 
+            header('Location: index.php'); 
+            exit;
+        } else {
+            $message = "Please verify your email address before logging in. Check your inbox for the verification link."; // Error for unverified users
+        }
+    } catch (Exception $e) {
+        $message = "Login failed: " . $e->getMessage(); // Display error message if login fails
     }
 }
 
